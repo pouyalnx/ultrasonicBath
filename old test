@@ -1,0 +1,315 @@
+/*		
+		if(adc_sample(&max)){
+			
+			if(max>4000){
+		  LPC_GPIO2->FIOCLR=0x800;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x800;	
+			}
+
+			if(max>3500){
+		  LPC_GPIO2->FIOCLR=0x400;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x400;	
+			}
+
+			if(max>3000){
+		  LPC_GPIO2->FIOCLR=0x200;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x200;	
+			}
+
+			if(max>2500){
+		  LPC_GPIO2->FIOCLR=0x100;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x100;	
+			}
+
+			if(max>2000){
+		  LPC_GPIO2->FIOCLR=0x80;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x80;	
+			}
+
+			if(max>1500){
+		  LPC_GPIO2->FIOCLR=0x40;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x40;	
+			}
+
+			if(max>1000){
+		  LPC_GPIO2->FIOCLR=0x20;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x20;	
+			}			
+			
+			if(max>500){
+		  LPC_GPIO2->FIOCLR=0x10;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x10;	
+			}
+			
+			if(max>100){
+		  LPC_GPIO2->FIOCLR=0x8;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x8;	
+			}
+			
+			if(max>10){
+		  LPC_GPIO2->FIOCLR=0x4;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x4;	
+			}
+			
+			if(max>5){
+		  LPC_GPIO2->FIOCLR=0x2;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x2;	
+			}			
+			
+			if(max>1){
+		  LPC_GPIO2->FIOCLR=0x1;				
+			}
+			else{
+			LPC_GPIO2->FIOSET=0x1;	
+			}
+
+		}
+	*/
+
+
+
+
+
+
+///revation 2
+ test
+
+
+
+
+	int stat;
+	int freq;
+	int on_off;
+	int power;
+  int gpv0;	
+	
+
+	int stat_menu;
+	
+	gpv0=0;	
+	on_off=0;
+	LPC_GPIO1->FIODIR=19;
+	LPC_GPIO1->FIOSET=19;
+	LPC_GPIO0->FIODIR=1<<11|1<<5;
+	LPC_GPIO0->FIOCLR=1<<5;
+	LPC_GPIO0->FIOSET=1<<11;
+//	LPC_GPIO2->FIODIR=0XFFF;
+
+
+
+
+
+
+	LPC_GPIO1->FIOCLR=2;
+	while(1){
+
+		stat=~(LPC_GPIO0->FIOPIN >>6);
+
+		
+		
+		
+		
+		
+		
+		
+		if(stat & 8){
+    
+			
+			
+			if(gpv0){
+				page_0_switch.stat=switch_menu_mode_0;
+				gpv0=0;
+			}
+			else{
+			page_0_switch.stat=switch_menu_mode_1;
+			gpv0=1;				
+			}
+			update_page_0();
+			
+			
+			
+			if(!on_off){
+    setup_pwm();
+			on_off=1;
+			power=10;
+			freq=safe_freq;
+		}
+    else{
+    stop_pwm();
+			on_off=0;
+		}
+			LPC_GPIO1->FIOCLR=1;    
+		while(stat &8){
+  	stat=~(LPC_GPIO0->FIOPIN >>6);			
+		}
+			LPC_GPIO1->FIOSET=1; 
+		}
+		
+
+		if(stat & 1){
+		freq+=100;
+   
+		if(page_0_decrase_switch.stat<2){
+		page_0_decrase_switch.stat++;	
+		}
+    else{
+    page_0_decrase_switch.stat=0;
+		}
+		update_page_0();
+		
+		if(page_1_bar_text.value<100){
+    page_1_bar_text.value++;
+		update_page_1();	
+		}			
+			
+    if(page_1_1.value>0){ page_1_1.value--;
+		update_page_1();
+		}
+		stat_menu=page_3_button[3].stat;
+		page_3_button[3].stat=button_menu_push;
+		update_page_3();		
+		
+			update_pwm(freq,power);	
+    while(stat &1){
+  	stat=~(LPC_GPIO0->FIOPIN >>6);		
+		}
+
+
+		
+		if(stat_menu==button_menu_off) page_3_button[3].stat=button_menu_on;
+		else                           page_3_button[3].stat=button_menu_off;       
+		update_page_3();
+		}
+
+
+		if(stat & 4){
+		freq-=100;
+
+
+		if(page_0_incrase_switch.stat<2){
+		page_0_incrase_switch.stat++;	
+		}
+    else{
+    page_0_incrase_switch.stat=0;
+		}
+		update_page_0();
+			
+		if(page_1_bar_text.value>0){
+    page_1_bar_text.value--;
+		update_page_1();	
+		}					
+			
+			
+    if(page_1_1.value<9){ page_1_1.value++;
+		update_page_1();
+		}
+		stat_menu=page_3_button[2].stat;
+	  page_3_button[2].stat=button_menu_push;
+		update_page_3();	
+		
+			
+		update_pwm(freq,power);			
+    while(stat &4){
+  	stat=~(LPC_GPIO0->FIOPIN >>6);		
+		}
+		
+		if(stat_menu==button_menu_off) page_3_button[2].stat=button_menu_on;
+		else                           page_3_button[2].stat=button_menu_off;       
+		update_page_3();		
+		}		
+
+		if(stat & 16){
+	
+    if(page_1_bar.value>0) page_1_bar.value-=100;			
+		update_page_1(); 
+			
+			
+		stat_menu=page_3_button[1].stat;
+		page_3_button[1].stat=button_menu_push;
+		update_page_3();	
+
+			
+			power+=10;	
+		update_pwm(freq,power);	
+    while(stat &16){
+  	stat=~(LPC_GPIO0->FIOPIN >>6);		
+		}
+	
+		if(stat_menu==button_menu_off) page_3_button[1].stat=button_menu_on;
+		else                           page_3_button[1].stat=button_menu_off;       
+		update_page_3();
+		}
+   
+
+		if(stat & 2){
+		
+
+
+     if(page_0_time_information.value<100){
+			 page_0_time_information.value++;
+			 
+		 }
+else{
+	page_0_time_information.value=0;
+}
+			
+update_page_0();
+    if(page_1_bar.value<2000) page_1_bar.value+=100;			
+		update_page_1();
+		stat_menu=page_3_button[0].stat;
+		page_3_button[0].stat=button_menu_push;
+		update_page_3();		
+		
+		power-=10;
+		update_pwm(freq,power);			
+    while(stat &2){
+  	stat=~(LPC_GPIO0->FIOPIN >>6);		
+		}
+		
+		
+		if(stat_menu==button_menu_off) page_3_button[0].stat=button_menu_on;
+		else                           page_3_button[0].stat=button_menu_off;       
+		update_page_3();
+		}			
+		}
+
+	//////////////////////////////////////////////////////////////////////
+17 april 2018
+
+	sprintf(text,"lpc1768 ultrasonic system\n");
+	debug_text(text);
+	
+	sprintf(text,"17 april 2018\n");
+	debug_text(text);
+	
+	sprintf(text,"ready\n***********************\n");
+	debug_text(text);
+
+			if(touch_read(&x,&y)){
+					//sprintf(text,"x=%d  y=%d \n",x,y);
+				  sprintf(text,"%d,",y);  
+				debug_text(text);
+			}	
+     for(x=0;x<999999;x++);		
